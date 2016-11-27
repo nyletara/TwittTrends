@@ -72,8 +72,13 @@ def parse_data(data):
     tweetHandler = TwitterHandler()
 
     # Here we have to create the Queue
-    queue = SQSServices()
-    queue_name = queue.getQueueName()
+    
+    try:
+        queue = SQSServices()
+        queue.createQueue("twitterTrends")   
+        print(queue.url)
+    except Exception as e:
+        print("Queue twitterTrends already exists")
 
     location = json_data_file["place"]
     coordinates = json_data_file["coordinates"]
@@ -104,7 +109,7 @@ def parse_data(data):
         timestamp = json_data_file["created_at"]
 
         location_data = [final_longitude, final_latitude]
-        
+
     try:
         # print(tweetHandler.insertTweet(tweetId, location_data, tweet, author, timestamp))
 
