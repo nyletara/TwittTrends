@@ -4,6 +4,7 @@ import ConfigParser
 from tweepy import Stream
 from tweepy.streaming import StreamListener
 from TweetHandler import TwitterHandler
+from AmazonSQSServices import SQSServices
 from ElasticSearchServices import ElasticSearchServices
 
 config = ConfigParser.ConfigParser()
@@ -70,37 +71,48 @@ def parse_data(data):
     json_data_file = json.loads(data)
     tweetHandler = TwitterHandler()
 
+    # Here we have to create the Queue
+    queue = SQSServices()
+    queue_name = queue.getQueueName()
+
     location = json_data_file["place"]
     coordinates = json_data_file["coordinates"]
+    language = json_data_file["lang"]
 
-    if coordinates is not None:
-        # print(json_data_file["coordinates"])
-        final_longitude = json_data_file["coordinates"][0]
-        final_latitude = json_data_file["coordinates"][0]
-    elif location is not None:
-        coord_array = json_data_file["place"]["bounding_box"]["coordinates"][0]
-        longitude = 0;
-        latitude = 0;
-        for object in coord_array:
-            # print(object)
-            longitude = longitude + object[0]
-            latitude = latitude + object[1]
-        # print(longitude / len(coord_array))
-        # print(latitude / len(coord_array))
+    if language is "en":
+        if coordinates is not None:
+            # print(json_data_file["coordinates"])
+            final_longitude = json_data_file["coordinates"][0]
+            final_latitude = json_data_file["coordinates"][0]
+        elif location is not None:
+            coord_array = json_data_file["place"]["bounding_box"]["coordinates"][0]
+            longitude = 0;
+            latitude = 0;
+            for object in coord_array:
+                # print(object)
+                longitude = longitude + object[0]
+                latitude = latitude + object[1]
+            # print(longitude / len(coord_array))
+            # print(latitude / len(coord_array))
 
-        final_longitude = longitude / len(coord_array)
-        final_latitude = latitude / len(coord_array)
+            final_longitude = longitude / len(coord_array)
+            final_latitude = latitude / len(coord_array)
 
-    tweetId = json_data_file['id_str']
-    tweet = json_data_file["text"]
-    author = json_data_file["user"]["name"]
-    timestamp = json_data_file["created_at"]
+        tweetId = json_data_file['id_str']
+        tweet = json_data_file["text"]
+        author = json_data_file["user"]["name"]
+        timestamp = json_data_file["created_at"]
 
-    location_data = [final_longitude, final_latitude]
+        location_data = [final_longitude, final_latitude]
+        
     try:
-        print(tweetHandler.insertTweet(tweetId, location_data, tweet, author, timestamp))
+        # print(tweetHandler.insertTweet(tweetId, location_data, tweet, author, timestamp))
+
+        # Format tweet into correct message format for SQS
+        formatted_tweet = tweetHandler.formatTweet(tweetId, location_data, tweet, author, timestamp)
+        print(queue_name.sendMessage(formatted_tweet))
     except:
-        print("Failed to insert tweet")
+        print("Failed to insert tweet into SQS")
 
 def startStream():
 

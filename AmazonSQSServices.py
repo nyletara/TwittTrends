@@ -6,6 +6,7 @@ class SQSServices():
 
 	def __init__(self):
 		self.sqs = boto3.resource('sqs')
+		return self.sqs.get_queue_by_name(QueueName=name)
 
 	def getQueueName(self, name):
 		queueName = self.sqs.get_queue_by_name(QueueName=name)
