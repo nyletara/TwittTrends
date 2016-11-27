@@ -6,6 +6,7 @@ from tweepy.streaming import StreamListener
 from TweetHandler import TwitterHandler
 from AmazonSQSServices import SQSServices
 from ElasticSearchServices import ElasticSearchServices
+from watson_developer_cloud import AlchemyLanguageV1
 
 config = ConfigParser.ConfigParser()
 config.readfp(open(r'./configurations.txt'))
@@ -17,6 +18,20 @@ accessSecret=config.get('API Keys', 'accessSecret')
 
 KEYWORDS = ['chelsea', 'premier', 'pokemon', 'fruit', 'food', 'coffee', 'pizza', 'california']
 REQUEST_LIMIT = 420
+
+try:
+    sqs_queue = SQSServices()
+    sqs_queue.createQueue("twitterTrends")   
+    print(sqs_queue.url)
+except Exception as e:
+    print("Queue twitterTrends already exists")
+
+try:
+    sns_service = SNSService()
+except Exception as e:
+    print("SNS service already established")
+
+alchemy = AlchemyLanguageV1(api_key='')
 
 collection = {
 	"mappings": {
@@ -73,13 +88,6 @@ def parse_data(data):
 
     # Here we have to create the Queue
     
-    try:
-        queue = SQSServices()
-        queue.createQueue("twitterTrends")   
-        print(queue.url)
-    except Exception as e:
-        print("Queue twitterTrends already exists")
-
     location = json_data_file["place"]
     coordinates = json_data_file["coordinates"]
     language = json_data_file["lang"]
@@ -115,7 +123,8 @@ def parse_data(data):
 
         # Format tweet into correct message format for SQS
         formatted_tweet = tweetHandler.formatTweet(tweetId, location_data, tweet, author, timestamp)
-        print(queue_name.sendMessage(formatted_tweet))
+        tweet = json.dumps(formatted_tweet)
+        print(queue_name.sendMessage(tweet))
     except:
         print("Failed to insert tweet into SQS")
 
@@ -132,6 +141,12 @@ def startStream():
             continue
 
     #The location specified above gets all tweets, we can then filter and store based on what we want
+
+def processData():
+    for message in sqs_queue.receiveMessage(twitterTrends, author):
+        for finaltweets2 in message.body:
+            print(finaltweets2)
+
 
 # For testing purposes only
 '''
