@@ -11,6 +11,18 @@ from TweetHandler import TwitterHandler
 def startTwitterRequests():
     startStream()
 
+def persistTweet(tweet):
+    tweeter = TwitterHandler()
+    
+    tid = tweet['id']
+    location_data = tweet['location_data']
+    message = tweet['message']
+    author = tweet['author']
+    timestamp = tweet['timestamp']
+
+    response = tweeter.insertTweet(tid, location_data, message, author, timestamp)
+    return response
+    
 # EB looks for an 'application' callable by default.
 application = Flask(__name__)
 
@@ -18,6 +30,28 @@ application = Flask(__name__)
 def api_root():
     return render_template('index.html')
     # return 'Welcome'
+
+@application.route('/search/sns')
+def snsFunction():
+    try:
+        notification = json.loads(request.data)
+    except Exception as e:
+        print("Unable to load request")
+        pass
+
+    print(notification)
+
+    headers = request.headers.get('X-Amz-Sns-Message-Type')
+
+    if headers == 'SubscriptionConfirmation' and 'SubscribeURL' in notification:
+        url = requests.get(notification['SubscribeURL'])
+        print(url)
+    elif headers == 'Notification':
+        persistTweet(notification)
+    else: 
+        print("Headers not specified")
+
+    return "SNS Notification Recieved\n"
 
 @application.route('/search/<keyword>')
 def searchKeyword(keyword):
@@ -37,4 +71,6 @@ if __name__ == "__main__":
     # removed before deploying a production app.
     thread.start_new_thread(startTwitterRequests, ())
     application.debug = True
+    application.host = '127.0.0.1'
+    application.port = 5000
     application.run()
