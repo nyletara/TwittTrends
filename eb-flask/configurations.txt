@@ -1,0 +1,12 @@
+[API Keys]
+consumerKey=CPZFTDBHjLW7ZNXcvPLkB063f
+consumerSecret=2aiO9j6alC0wKWYOLTmNbo8wCGpRGu0O4QHWAork70gYCZMEk4
+accessToken=786036603332329472-GVyUTbel8v80MlM3iii5QhZuGL1biO0
+accessSecret=5d2Knn1NyR5Vfzsk1VSKziPubURmn7AXzOs6LOeZO96Dl
+accessAlchemy=9737ad78d692eb8a90391c8a0703e0ddc6a5c3b0
+
+[ES Instance]
+HOSTADDRESS = search-twittermap-3uaivoajhtahixeeu6go6ascfi.us-west-2.es.amazonaws.com
+USERNAME =
+PASSWORD =
+PORT = 80
