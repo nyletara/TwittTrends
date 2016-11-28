@@ -1,6 +1,7 @@
 import tweepy
 import json
 import boto3
+import time
 import ConfigParser
 from tweepy import Stream
 from tweepy.streaming import StreamListener
@@ -8,7 +9,7 @@ from TweetHandler import TwitterHandler
 from AmazonSQSServices import SQSServices
 from AmazonSNSServices import SNSServices
 from ElasticSearchServices import ElasticSearchServices
-# from watson_developer_cloud import AlchemyLanguageV1
+from watson_developer_cloud import AlchemyLanguageV1
 
 config = ConfigParser.ConfigParser()
 config.readfp(open(r'./configurations.txt'))
@@ -17,6 +18,7 @@ consumerKey=config.get('API Keys', 'consumerKey')
 consumerSecret=config.get('API Keys', 'consumerSecret')
 accessToken=config.get('API Keys', 'accessToken')
 accessSecret=config.get('API Keys', 'accessSecret')
+alchemyAPIKey=config.get('API Keys', 'accessAlchemy')
 
 KEYWORDS = ['chelsea', 'premier', 'pokemon', 'fruit', 'food', 'coffee', 'pizza', 'california']
 REQUEST_LIMIT = 420
@@ -30,12 +32,13 @@ except Exception as e:
     # print(sqs_queue.getQueueName('twitterTrends'))
 
 try:
-    # sns = boto3.resource('sns')
-    sns_service = SNSServices()
+    sns = boto3.client('sns')
+    # sns_service = SNSServices()
 except Exception as e:
     print("SNS service already established")
 
-# alchemy = AlchemyLanguageV1(api_key='')
+print(alchemyAPIKey)
+alchemy = AlchemyLanguageV1(api_key=alchemyAPIKey)
 
 collection = {
 	"mappings": {
@@ -73,6 +76,7 @@ class TweetListener(StreamListener):
     def on_data(self, data):
         try:
             parse_data(data)
+            processData()
         except:
             # print(data)
             print("No location data found")
@@ -149,7 +153,7 @@ def startStream():
     while True:
         try:
             twitterStream = Stream(auth, TweetListener())
-            twitterStream.filter(track=KEYWORDS)
+            twitterStream.filter(languages=['en'], track=KEYWORDS)
         except:
             print("Restarting Stream")
             continue
@@ -157,9 +161,15 @@ def startStream():
     #The location specified above gets all tweets, we can then filter and store based on what we want
 
 def processData():
-    for message in sqs_queue.receiveMessage('twitterTrends', 'author'):
-        for finaltweets2 in message.body:
-            print(finaltweets2)
+    queue_name = sqs_queue.getQueueName('twitterTrends')
+    for message in queue_name.receive_messages(MessageAttributeNames=['author']):
+        json_dict = json.loads(message.body)
+        response = json.dumps(alchemy.sentiment(text=json_dict['message']), indent=2)
+        json_dict['alchemy_response'] = response
+        sns.publish(TopicArn='arn:aws:sns:us-west-2:963145354502:tweets', Message=json.dumps({'default':json.dumps(json_dict)}), MessageStructure='json')
+        print("!@#$%^&*(*&^%$#@!@#$%^&*(*&^%$#@!@#$%^&*((*&^%$#@!")
+        message.delete()
+        # time.sleep(10)
 
 
 # For testing purposes only
