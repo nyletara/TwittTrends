@@ -71,6 +71,14 @@ class TwitterHandler:
 
 	def formatTweet (self, id, location_data, tweet, author, timestamp):
 		
+		# print "!!!!!!!!!!!!!!!!"
+		# print id
+		# print tweet
+		# print author
+		# print timestamp
+		# print location_data[0]
+		# print location_data[1]
+
 		tweet = {
 			"id": id,
 			"message": tweet,

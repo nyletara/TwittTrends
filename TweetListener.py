@@ -1,12 +1,14 @@
 import tweepy
 import json
+import boto3
 import ConfigParser
 from tweepy import Stream
 from tweepy.streaming import StreamListener
 from TweetHandler import TwitterHandler
 from AmazonSQSServices import SQSServices
+from AmazonSNSServices import SNSServices
 from ElasticSearchServices import ElasticSearchServices
-from watson_developer_cloud import AlchemyLanguageV1
+# from watson_developer_cloud import AlchemyLanguageV1
 
 config = ConfigParser.ConfigParser()
 config.readfp(open(r'./configurations.txt'))
@@ -21,17 +23,19 @@ REQUEST_LIMIT = 420
 
 try:
     sqs_queue = SQSServices()
-    sqs_queue.createQueue("twitterTrends")   
-    print(sqs_queue.url)
+    sqs = boto3.resource('sqs')
+    # print(sqs_queue.createQueue('twitterTrends'))
 except Exception as e:
     print("Queue twitterTrends already exists")
+    # print(sqs_queue.getQueueName('twitterTrends'))
 
 try:
-    sns_service = SNSService()
+    # sns = boto3.resource('sns')
+    sns_service = SNSServices()
 except Exception as e:
     print("SNS service already established")
 
-alchemy = AlchemyLanguageV1(api_key='')
+# alchemy = AlchemyLanguageV1(api_key='')
 
 collection = {
 	"mappings": {
@@ -92,31 +96,31 @@ def parse_data(data):
     coordinates = json_data_file["coordinates"]
     language = json_data_file["lang"]
 
-    if language is "en":
-        if coordinates is not None:
-            # print(json_data_file["coordinates"])
-            final_longitude = json_data_file["coordinates"][0]
-            final_latitude = json_data_file["coordinates"][0]
-        elif location is not None:
-            coord_array = json_data_file["place"]["bounding_box"]["coordinates"][0]
-            longitude = 0;
-            latitude = 0;
-            for object in coord_array:
-                # print(object)
-                longitude = longitude + object[0]
-                latitude = latitude + object[1]
-            # print(longitude / len(coord_array))
-            # print(latitude / len(coord_array))
+    # if language is "en":
+    if coordinates is not None:
+        # print(json_data_file["coordinates"])
+        final_longitude = json_data_file["coordinates"][0]
+        final_latitude = json_data_file["coordinates"][0]
+    elif location is not None:
+        coord_array = json_data_file["place"]["bounding_box"]["coordinates"][0]
+        longitude = 0;
+        latitude = 0;
+        for object in coord_array:
+            # print(object)
+            longitude = longitude + object[0]
+            latitude = latitude + object[1]
+        # print(longitude / len(coord_array))
+        # print(latitude / len(coord_array))
 
-            final_longitude = longitude / len(coord_array)
-            final_latitude = latitude / len(coord_array)
+        final_longitude = longitude / len(coord_array)
+        final_latitude = latitude / len(coord_array)
 
-        tweetId = json_data_file['id_str']
-        tweet = json_data_file["text"]
-        author = json_data_file["user"]["name"]
-        timestamp = json_data_file["created_at"]
+    tweetId = json_data_file['id_str']
+    tweet = json_data_file["text"]
+    author = json_data_file["user"]["name"]
+    timestamp = json_data_file["created_at"]
 
-        location_data = [final_longitude, final_latitude]
+    location_data = [final_longitude, final_latitude]
 
     try:
         # print(tweetHandler.insertTweet(tweetId, location_data, tweet, author, timestamp))
@@ -124,7 +128,17 @@ def parse_data(data):
         # Format tweet into correct message format for SQS
         formatted_tweet = tweetHandler.formatTweet(tweetId, location_data, tweet, author, timestamp)
         tweet = json.dumps(formatted_tweet)
-        print(queue_name.sendMessage(tweet))
+        print(tweet)
+        queue_name = sqs_queue.getQueueName('twitterTrends')
+        # queue_name2 = sqs.get_queue_by_name(QueueName='twitterTrends')
+        print(queue_name)
+        # print(queue_name2)
+        print(type(queue_name))
+        # print(type(queue_name2))
+        response = queue_name.send_message(MessageBody=tweet)
+        # response = sqs_queue.sendMessage(queue_name, tweet)
+        print(type(response))
+        print("Added tweet to SQS")
     except:
         print("Failed to insert tweet into SQS")
 
@@ -143,7 +157,7 @@ def startStream():
     #The location specified above gets all tweets, we can then filter and store based on what we want
 
 def processData():
-    for message in sqs_queue.receiveMessage(twitterTrends, author):
+    for message in sqs_queue.receiveMessage('twitterTrends', 'author'):
         for finaltweets2 in message.body:
             print(finaltweets2)
 

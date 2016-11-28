@@ -5,6 +5,7 @@ class SQSServices():
 	"""docstring for SQSServices"""
 
 	def __init__(self):
+		print('Initializing SQS Service')
 		self.sqs = boto3.resource('sqs')
 
 	def createQueue(name):
@@ -15,7 +16,10 @@ class SQSServices():
 		return queueName
 
 	def sendMessage(queueName, message):
-		return queueName.send_messages(MessageBody=message)
+		# print(queueName.send_message(MessageBody=message))
+		# print(queue)
+		response = queueName.send_message(MessageBody=message)
+		return response
 
 	def receiveMessage(queueName, messageAttribute):
 		return queueName.receive_messages(MessageAttributeNames=[messageAttribute])
