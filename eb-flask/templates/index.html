@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<link rel="stylesheet" href="../static/css/bootstrap.css">
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> <!-- adding jQuery.js -->
+	</head>
+	<body>
+		<!-- load Google map-->
+		<div id="map"></div>
+		<!-- keyword select form -->
+		<form class="form-horizontal ui-draggable" id="keyword_select_form" draggable=true>
+  		<fieldset>
+  			<h5><b>Tweet Map</b></h5>
+    		<div class="form-group">
+          <div class="row">
+      			<label for="select" class="col-sm-2 control-label" id="keyword_label">Key Word</label>
+      			<div class="col-sm-10" id="drop-down_select">
+        			<select class="form-control" id="selected_keyword">
+          				<option selected="selected">chelsea</option>
+          				<option>premier</option>
+          				<option>pokemon</option>
+          				<option>fruit</option>
+          				<option>food</option>
+          				<option>coffee</option>
+          				<option>pizza</option>
+          				<option>california</option>
+        			</select>
+      			</div>
+    		  </div>
+          <div class="form-group">
+            <label for="select" class="col-sm-2 control-label" id="distance_label">Distance (km)</label>
+            <div class="col-sm-10" id="drop-down_select">
+              <select class="form-control" id="selected_distance">
+                  <option selected="selected">10</option>
+                  <option>50</option>
+                  <option>100</option>
+                  <option>200</option>
+                  <option>500</option>
+                  <option>1000</option>
+                  <option>5000</option>
+              </select>
+            </div>
+          </div>
+      			<div class="col-sm-10 col-sm-offset-2" id="buttons">
+        			<button type="reset" class="btn btn-default">Cancel</button>
+        			<button type="submit" class="btn btn-primary">Submit</button> 
+      		  </div>
+  		</fieldset>
+        <span id="warning"></span>
+		</form>
+        <span id='testing'><span>
+		<script src="../static/js/tweetController.js"></script>
+    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfLyBKivYy0v-7sdMtqmpO2cK92X8n-a4&callback=initMap"></script>
+	</body>
+</html>

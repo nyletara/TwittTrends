@@ -45,7 +45,7 @@ def snsFunction():
 
     if headers == 'SubscriptionConfirmation' and 'SubscribeURL' in notification:
         url = requests.get(notification['SubscribeURL'])
-        print(url)
+        print(url) 
     elif headers == 'Notification':
         persistTweet(notification)
     else: 
@@ -71,6 +71,6 @@ if __name__ == "__main__":
     # removed before deploying a production app.
     thread.start_new_thread(startTwitterRequests, ())
     application.debug = True
-    application.host = '127.0.0.1'
-    application.port = 5000
+    # application.host = '127.0.0.1'
+    # application.port = 5000
     application.run()
