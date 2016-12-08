@@ -134,13 +134,9 @@ def parse_data(data):
         tweet = json.dumps(formatted_tweet)
         print(tweet)
         queue_name = sqs_queue.getQueueName('twitterTrends')
-        # queue_name2 = sqs.get_queue_by_name(QueueName='twitterTrends')
         print(queue_name)
-        # print(queue_name2)
         print(type(queue_name))
-        # print(type(queue_name2))
         response = queue_name.send_message(MessageBody=tweet)
-        # response = sqs_queue.sendMessage(queue_name, tweet)
         print(type(response))
         print("Added tweet to SQS")
     except:
@@ -164,8 +160,9 @@ def processData():
     queue_name = sqs_queue.getQueueName('twitterTrends')
     for message in queue_name.receive_messages(MessageAttributeNames=['author']):
         json_dict = json.loads(message.body)
-        response = json.dumps(alchemy.sentiment(text=json_dict['message']), indent=2)
-        json_dict['alchemy_response'] = response
+        response = alchemy.sentiment(text=json_dict['message'])
+        json_dict['alchemy_response'] = response['docSentiment']
+        print(json_dict['alchemy_response'])
         sns.publish(TopicArn='arn:aws:sns:us-west-2:963145354502:tweets', Message=json.dumps({'default':json.dumps(json_dict)}), MessageStructure='json')
         print("!@#$%^&*(*&^%$#@!@#$%^&*(*&^%$#@!@#$%^&*((*&^%$#@!")
         message.delete()
