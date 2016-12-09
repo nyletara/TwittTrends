@@ -2,8 +2,8 @@ import json
 import thread
 
 from TweetListener import *
-from flask import Flask, render_template, jsonify
-
+from flask import Flask, render_template, jsonify, request
+import requests
 from TweetHandler import TwitterHandler
 
 
@@ -35,13 +35,13 @@ def api_root():
 def snsFunction():
     try:
         notification = json.loads(request.data)
-    except Exception as e:
+    except:
         print("Unable to load request")
         pass
 
-    print(notification)
-
+    
     headers = request.headers.get('X-Amz-Sns-Message-Type')
+    print(notification)
 
     if headers == 'SubscriptionConfirmation' and 'SubscribeURL' in notification:
         url = requests.get(notification['SubscribeURL'])
@@ -70,7 +70,4 @@ if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
     # removed before deploying a production app.
     thread.start_new_thread(startTwitterRequests, ())
-    application.debug = True
-    # application.host = '127.0.0.1'
-    # application.port = 5000
-    application.run()
+    application.run(host='0.0.0.0', debug=true, port=5000)

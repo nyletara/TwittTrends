@@ -150,6 +150,10 @@ def parse_data(data):
         response = queue_name.send_message(MessageBody=tweet)
         # response = sqs_queue.sendMessage(queue_name, tweet)
         # print(type(response))
+        print(queue_name)
+        print(type(queue_name))
+        response = queue_name.send_message(MessageBody=tweet)
+        print(type(response))
         print("Added tweet to SQS")
     except:
         print("Failed to insert tweet into SQS")
@@ -176,10 +180,16 @@ def processData_old():
     # print(type(queue_name))
     for message in queue_name.receive_messages(MessageAttributeNames=['author']):
         json_dict = json.loads(message.body)
+<<<<<<< HEAD
         response = json.dumps(alchemy.sentiment(text=json_dict['message']), indent=2)
         print(response)
         json_dict['alchemy_response'] = response
         print(json_dict)
+=======
+        response = alchemy.sentiment(text=json_dict['message'])
+        json_dict['alchemy_response'] = response['docSentiment']
+        print(json_dict['alchemy_response'])
+>>>>>>> 695a40b209d5dd754ec649fa431a1f0f32dc505c
         sns.publish(TopicArn='arn:aws:sns:us-west-2:963145354502:tweets', Message=json.dumps({'default':json.dumps(json_dict)}), MessageStructure='json')
         #print("!@#$%^&*(*&^%$#@!@#$%^&*(*&^%$#@!@#$%^&*((*&^%$#@!")
         message.delete()

@@ -3,7 +3,6 @@ import thread
 
 from TweetListener import *
 from flask import Flask, render_template, jsonify, request
-
 from flask_socketio import SocketIO, send, emit
 from TweetHandler import TwitterHandler
 import requests
@@ -74,7 +73,7 @@ def snsFunction():
 
     if headers == 'SubscriptionConfirmation' and 'SubscribeURL' in notification:
         url = requests.get(notification['SubscribeURL'])
-        print(url)
+        print(url) 
     elif headers == 'Notification':
         persistTweet(notification)
         socketio.emit('first', {'notification':'New Tweet!'})
