@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="../static/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/css/style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> <!-- adding jQuery.js -->
+   <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+	<script src="../static/js/notify.js"></script>	
 	</head>
 	<body>
 		<!-- load Google map-->
@@ -50,8 +52,22 @@
   		</fieldset>
         <span id="warning"></span>
 		</form>
-        <span id='testing'><span>
-		<script src="../static/js/tweetController.js"></script>
+	
+	 <div id='success-alert'>
+                <p> Indicates a successful or positive action.</p>
+        </div>
+
+	<script src="../static/js/tweetController.js"></script>
+        <script type="text/javascript" charset="utf-8">
+		console.log("in io");
+		var socket = io.connect('http://ec2-54-226-80-0.compute-1.amazonaws.com:5000');
+		socket.on('first', function(socket){
+			$.notify("New Tweet");
+		});
+		console.log("after io");
+	</script>
+	<span id='testing'><span>
+		<!-- <script src="../static/js/tweetController.js"></script> -->
     <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfLyBKivYy0v-7sdMtqmpO2cK92X8n-a4&callback=initMap"></script>
 	</body>

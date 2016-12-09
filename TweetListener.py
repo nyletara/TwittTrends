@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+import traceback
 import tweepy
 import json
 import boto3
@@ -58,7 +60,10 @@ collection = {
 				},
 				"location": {
 					"type": "geo_point"
-				}
+				}, 
+                                "sentiment": {
+                                        "type": "string"
+                                }
 			}
 		}
 	}
@@ -78,9 +83,9 @@ class TweetListener(StreamListener):
             parse_data(data)
             processData()
         except:
-            # print(data)
-            print("No location data found")
-
+            pass
+            # print("")
+            # print("No location data found")
         return(True)
 
     def on_error(self, status):
@@ -118,6 +123,9 @@ def parse_data(data):
 
         final_longitude = longitude / len(coord_array)
         final_latitude = latitude / len(coord_array)
+    #print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    # print json_data_file
+    # print (type(json_data_file)
 
     tweetId = json_data_file['id_str']
     tweet = json_data_file["text"]
@@ -132,19 +140,20 @@ def parse_data(data):
         # Format tweet into correct message format for SQS
         formatted_tweet = tweetHandler.formatTweet(tweetId, location_data, tweet, author, timestamp)
         tweet = json.dumps(formatted_tweet)
-        print(tweet)
+        # print(tweet)
         queue_name = sqs_queue.getQueueName('twitterTrends')
         # queue_name2 = sqs.get_queue_by_name(QueueName='twitterTrends')
-        print(queue_name)
+        # print(queue_name)
         # print(queue_name2)
-        print(type(queue_name))
+        # print(type(queue_name))
         # print(type(queue_name2))
         response = queue_name.send_message(MessageBody=tweet)
         # response = sqs_queue.sendMessage(queue_name, tweet)
-        print(type(response))
+        # print(type(response))
         print("Added tweet to SQS")
     except:
         print("Failed to insert tweet into SQS")
+        traceback.print_exc()
 
 def startStream():
 
@@ -159,18 +168,33 @@ def startStream():
             continue
 
     #The location specified above gets all tweets, we can then filter and store based on what we want
-
+'''
+def processData_old():
+    print("Processing Data")
+    queue_name = sqs_queue.getQueueName('twitterTrends')
+    #print(queue_name.receive_messages(MessageAttributeNames=['author']))
+    # print(type(queue_name))
+    for message in queue_name.receive_messages(MessageAttributeNames=['author']):
+        json_dict = json.loads(message.body)
+        response = json.dumps(alchemy.sentiment(text=json_dict['message']), indent=2)
+        print(response)
+        json_dict['alchemy_response'] = response
+        print(json_dict)
+        sns.publish(TopicArn='arn:aws:sns:us-west-2:963145354502:tweets', Message=json.dumps({'default':json.dumps(json_dict)}), MessageStructure='json')
+        #print("!@#$%^&*(*&^%$#@!@#$%^&*(*&^%$#@!@#$%^&*((*&^%$#@!")
+        message.delete()
+        # time.sleep(10)
+'''
 def processData():
     queue_name = sqs_queue.getQueueName('twitterTrends')
     for message in queue_name.receive_messages(MessageAttributeNames=['author']):
         json_dict = json.loads(message.body)
-        response = json.dumps(alchemy.sentiment(text=json_dict['message']), indent=2)
-        json_dict['alchemy_response'] = response
+        response = alchemy.sentiment(text=json_dict['message'])
+        json_dict['alchemy_response'] = response['docSentiment']
+        # print(json_dict['alchemy_response'])
         sns.publish(TopicArn='arn:aws:sns:us-west-2:963145354502:tweets', Message=json.dumps({'default':json.dumps(json_dict)}), MessageStructure='json')
         print("!@#$%^&*(*&^%$#@!@#$%^&*(*&^%$#@!@#$%^&*((*&^%$#@!")
         message.delete()
-        # time.sleep(10)
-
 
 # For testing purposes only
 '''

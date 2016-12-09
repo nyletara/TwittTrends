@@ -49,7 +49,7 @@ class TwitterHandler:
 
 		return result
 
-	def insertTweet(self, id, location_data, tweet, author, timestamp):
+	def insertTweet(self, id, location_data, tweet, author, timestamp, sentiment):
 		print "!!!!!!!!!!!!!!!!"
 		print id
 		print tweet
@@ -57,12 +57,14 @@ class TwitterHandler:
 		print timestamp
 		print location_data[0]
 		print location_data[1]
+                print sentiment
 		body = {
 			"id": id,
 			"message": tweet,
 			"author": author,
 			"timestamp": timestamp,
-			"location": location_data
+			"location": location_data,
+                        "sentiment": sentiment
 		}
 
 		result = self.es.store_data(self.index, self.doc_type, body)
