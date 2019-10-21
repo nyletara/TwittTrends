@@ -98,7 +98,7 @@ visitor==0.1.2
 watson-developer-cloud==0.22.0
 wcwidth==0.1.7
 websocket-client==0.37.0
-Werkzeug==0.11.5
+Werkzeug==0.15.3
 xattr==0.6.4
 youtube-dl==2016.5.1
 zope.interface==4.1.1
