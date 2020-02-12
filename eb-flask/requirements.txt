@@ -11,7 +11,7 @@ bs4==0.0.1
 cement==2.8.2
 click==6.6
 colorama==0.3.7
-Django==1.9.6
+Django==1.11.28
 docker-py==1.7.2
 dockerpty==0.4.1
 docopt==0.6.2
