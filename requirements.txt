@@ -81,7 +81,7 @@ pytz==2013.7
 PyYAML==3.12
 requests==2.11.1
 requests-oauthlib==0.7.0
-rsa==3.4.2
+rsa==4.7
 s3transfer==0.1.4
 scipy==0.13.0b1
 semantic-version==2.5.0
